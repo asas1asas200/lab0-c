@@ -37,7 +37,27 @@ void q_free(struct list_head *l) {}
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        goto ERR_LIST_NULL;
+
+    element_t *new_element = malloc(sizeof(element_t));
+    if (!new_element)
+        goto ERR_NEW_ELEMENT;
+
+    size_t size = strlen(s) + 1;
+    new_element->value = malloc(sizeof(char) * strlen(s) + 1);
+    if (!new_element->value)
+        goto ERR_NEW_VALUE;
+
+    strncpy(new_element->value, s, size);
+    list_add(&new_element->list, head);
     return true;
+
+ERR_NEW_VALUE:
+    free(new_element);
+ERR_NEW_ELEMENT:
+ERR_LIST_NULL:
+    return false;
 }
 
 /*
