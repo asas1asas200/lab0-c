@@ -82,6 +82,9 @@ ERR_LIST_NULL:
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
     struct list_head *last_entry = NULL;
     last_entry = &list_last_entry(head, element_t, list)->list;
     return q_insert_head(last_entry, s);
