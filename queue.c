@@ -233,9 +233,64 @@ void q_reverse(struct list_head *head)
     }
 }
 
+void merge_sort(struct list_head *l, struct list_head *r, size_t len)
+{
+    if (len <= 1 || l == r)
+        return;
+    struct list_head *mid = l;
+    int cnt = len >> 1;
+    int r_len = len - cnt;
+    while (cnt--)
+        mid = mid->next;
+    merge_sort(l, mid->prev, len >> 1);
+    merge_sort(mid, r, r_len);
+
+    // sorting
+    struct list_head *mid_iter = mid;
+    struct list_head *l_iter = l;
+    char *tmp[len];
+    for (int i = 0; i < len; i++)
+        tmp[i] = NULL;
+    int idx = 0;
+    while (l_iter != mid && mid_iter != r->next) {
+        if (strcmp(list_entry(l_iter, element_t, list)->value,
+                   list_entry(mid_iter, element_t, list)->value) <= 0) {
+            tmp[idx++] = list_entry(l_iter, element_t, list)->value;
+            l_iter = l_iter->next;
+        } else {
+            tmp[idx++] = list_entry(mid_iter, element_t, list)->value;
+            mid_iter = mid_iter->next;
+        }
+    }
+
+    // cleanup
+    while (l_iter != mid) {
+        tmp[idx++] = list_entry(l_iter, element_t, list)->value;
+        l_iter = l_iter->next;
+    }
+    while (mid_iter != r->next) {
+        tmp[idx++] = list_entry(mid_iter, element_t, list)->value;
+        mid_iter = mid_iter->next;
+    }
+
+    // write back
+    element_t *now = list_entry(l, element_t, list);
+    for (idx = 0; idx < len; idx++) {
+        now->value = tmp[idx];
+        now = list_entry(now->list.next, element_t, list);
+    }
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (!head || q_size(head) <= 1)
+        return;
+
+    merge_sort(&list_first_entry(head, element_t, list)->list,
+               &list_last_entry(head, element_t, list)->list, q_size(head));
+}
