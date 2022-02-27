@@ -17,12 +17,12 @@
  */
 struct list_head *q_new()
 {
-    element_t *new_element = malloc(sizeof(element_t));
-    if (!new_element)
+    struct list_head *head = malloc(sizeof(struct list_head));
+    if (!head)
         return NULL;
 
-    INIT_LIST_HEAD(&new_element->list);
-    return &new_element->list;
+    INIT_LIST_HEAD(head);
+    return head;
 }
 
 /* Free all storage used by queue */
@@ -38,7 +38,7 @@ void q_free(struct list_head *l)
         if (iter)
             free(iter);
     }
-    free(list_entry(l, element_t, list));
+    free(l);
 }
 
 /*
