@@ -287,47 +287,31 @@ void merge_sort(struct list_head *l, struct list_head *r, size_t len)
 {
     if (len <= 1 || l == r)
         return;
-    struct list_head *mid = l;
+    struct list_head *mid = l, *safe_l = l->prev, *safe_r = r->next;
     int cnt = len >> 1;
     int r_len = len - cnt;
     while (cnt--)
         mid = mid->next;
     merge_sort(l, mid->prev, len >> 1);
+    l = safe_l->next;
     merge_sort(mid, r, r_len);
+    mid = l;
+    cnt = len >> 1;
+    while (cnt--)
+        mid = mid->next;
 
-    // sorting
-    struct list_head *mid_iter = mid;
+    struct list_head *r_iter = mid;
     struct list_head *l_iter = l;
-    char *tmp[len];
-    for (int i = 0; i < len; i++)
-        tmp[i] = NULL;
-    int idx = 0;
-    while (l_iter != mid && mid_iter != r->next) {
+    while (l_iter != r_iter && r_iter != safe_r) {
         if (strcmp(list_entry(l_iter, element_t, list)->value,
-                   list_entry(mid_iter, element_t, list)->value) <= 0) {
-            tmp[idx++] = list_entry(l_iter, element_t, list)->value;
+                   list_entry(r_iter, element_t, list)->value) <= 0) {
             l_iter = l_iter->next;
         } else {
-            tmp[idx++] = list_entry(mid_iter, element_t, list)->value;
-            mid_iter = mid_iter->next;
+            struct list_head *tmp = r_iter->next;
+            list_del(r_iter);
+            list_add_tail(r_iter, l_iter);
+            r_iter = tmp;
         }
-    }
-
-    // cleanup
-    while (l_iter != mid) {
-        tmp[idx++] = list_entry(l_iter, element_t, list)->value;
-        l_iter = l_iter->next;
-    }
-    while (mid_iter != r->next) {
-        tmp[idx++] = list_entry(mid_iter, element_t, list)->value;
-        mid_iter = mid_iter->next;
-    }
-
-    // write back
-    element_t *now = list_entry(l, element_t, list);
-    for (idx = 0; idx < len; idx++) {
-        now->value = tmp[idx];
-        now = list_entry(now->list.next, element_t, list);
     }
 }
 
